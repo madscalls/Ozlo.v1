@@ -1,0 +1,112 @@
+:root {
+  --paper: #f1ebdf;
+  --ink: #2a1d14;
+  --orange: #e8641c;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--paper);
+}
+
+.sandbox {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  gap: 32px;
+  min-height: 100vh;
+  padding: 32px;
+}
+
+.sandbox__panel h1 {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+}
+
+.sandbox__panel h2 {
+  margin: 24px 0 8px;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.sandbox__hint {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.sandbox__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sandbox button {
+  padding: 8px 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.sandbox button[aria-pressed='true'] {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #fff;
+}
+
+.sandbox__chat {
+  display: flex;
+  gap: 8px;
+}
+
+.sandbox__chat input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 12px;
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+}
+
+.sandbox__match {
+  margin: 8px 0 0;
+  font-size: 0.9rem;
+}
+
+.sandbox__log {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.sandbox__big {
+  display: grid;
+  place-items: center;
+}
+
+.sandbox__corner {
+  position: fixed;
+  right: 20px;
+  bottom: 16px;
+}
+
+@media (max-width: 760px) {
+  .sandbox {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+}

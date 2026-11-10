@@ -1,0 +1,176 @@
+/* Ozlo: all motion is CSS; moods change the timing through custom properties. */
+
+.ozlo {
+  --bob-time: 1.4s;
+  --bob-height: -24px;
+  --glow: 0.45;
+  position: relative;
+  display: inline-block;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ozlo[data-mood='happy'] {
+  --bob-time: 0.9s;
+  --bob-height: -34px;
+  --glow: 0.65;
+}
+
+.ozlo[data-mood='thinking'] {
+  --bob-time: 1.9s;
+  --bob-height: -16px;
+}
+
+.ozlo__stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+.ozlo__layer,
+.ozlo__lids {
+  position: absolute;
+  max-width: none;
+}
+
+.ozlo__lids {
+  left: 0;
+  top: 0;
+  overflow: visible;
+}
+
+.ozlo__lids path {
+  fill: none;
+  stroke: #46190a;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+/* Face patches and lids are always in the page (so they're loaded), hidden until needed. */
+.ozlo__layer[data-hide],
+.ozlo__lids[data-hide] {
+  visibility: hidden;
+}
+
+/* Bounce: low and squashed at the start of the loop, high and slightly stretched halfway. */
+.ozlo__bob {
+  position: absolute;
+  inset: 0;
+  animation: ozlo-bob var(--bob-time) infinite;
+}
+
+@keyframes ozlo-bob {
+  0%,
+  100% {
+    transform: translateY(0) scale(1.04, 0.96);
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+  50% {
+    transform: translateY(var(--bob-height)) scale(0.99, 1.01);
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+}
+
+/* The shadow shrinks and fades as Ozlo rises. */
+.ozlo__shadow {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(74, 36, 16, 0.42);
+  filter: blur(10px);
+  animation: ozlo-shadow var(--bob-time) infinite;
+}
+
+@keyframes ozlo-shadow {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+  50% {
+    transform: scale(0.8);
+    opacity: 0.7;
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+}
+
+/* Warm glow behind the body; it pulses while thinking. */
+.ozlo__glow {
+  position: absolute;
+  width: 560px;
+  height: 560px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 150, 40, 0.9) 0%, rgba(255, 120, 20, 0.35) 38%, rgba(255, 120, 20, 0) 68%);
+  opacity: var(--glow);
+  transition: opacity 0.6s ease;
+}
+
+.ozlo[data-mood='thinking'] .ozlo__glow {
+  animation: ozlo-glow 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes ozlo-glow {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 0.75;
+  }
+}
+
+/* Droplets bob on their own, a quarter-beat behind the body. */
+.ozlo__drop {
+  animation: ozlo-drop var(--bob-time) infinite;
+  --drop: -9px;
+}
+
+.ozlo__drop--2 {
+  --drop: 9px;
+}
+
+.ozlo__drop--3 {
+  --drop: -7px;
+}
+
+@keyframes ozlo-drop {
+  0%,
+  100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+  25% {
+    transform: translateY(var(--drop));
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+  75% {
+    transform: translateY(calc(var(--drop) * -1));
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+  }
+}
+
+/* Morphing: blended frames plus one face layer on top. */
+.ozlo__morph,
+.ozlo__frames,
+.ozlo__frame,
+.ozlo__face {
+  position: absolute;
+  inset: 0;
+}
+
+.ozlo__eyes {
+  transform-origin: 50% 55%;
+  transition: transform 60ms ease-out;
+}
+
+.ozlo__face[data-blink] .ozlo__eyes {
+  transform: scaleY(0.08);
+}
+
+/* Reduced motion or a hidden tab: hold still. */
+.ozlo[data-still] .ozlo__bob,
+.ozlo[data-still] .ozlo__shadow,
+.ozlo[data-still] .ozlo__drop,
+.ozlo[data-still] .ozlo__glow {
+  animation: none;
+}
