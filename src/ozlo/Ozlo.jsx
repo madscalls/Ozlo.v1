@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { LAYERS, LIDS, SHADOW, STAGE, BODY_CENTRE } from './layers.js';
-import { FRAMES, EYES, EYES_ON, GROUND } from './morphs.js';
+import { FRAMES, EYES, EYES_ON, GROUND, FORM_FRAMES, GROUND_DECOR } from './morphs.js';
 import useMorph from './useMorph.js';
 import './Ozlo.css';
 
@@ -13,7 +13,7 @@ import './Ozlo.css';
  *  talking      true while a reply is streaming: the mouth flaps
  *  look         'center' | 'up'
  *  blinkSignal  change this number to force a blink (handy for testing)
- *  form         'core' | 'car' | 'hat' – changing it plays the splat-and-bounce morph
+ *  form         'core' | 'car' | 'hat' | 'sign' – changing it plays the splat-and-bounce morph
  */
 export default function Ozlo({ size = 150, mood = 'idle', talking = false, look = 'center', blinkSignal = 0, form = 'core' }) {
   const reduced = usePrefersReducedMotion();
@@ -32,7 +32,8 @@ export default function Ozlo({ size = 150, mood = 'idle', talking = false, look 
 
   // Load the morph art in the background once the page is idle, so the first morph doesn't flicker.
   useEffect(() => {
-    const load = () => [...Object.values(FRAMES), EYES].forEach(({ src }) => {
+    const art = [...Object.values(FRAMES), ...Object.values(FRAMES).flatMap((f) => f.orbs || []), ...Object.values(GROUND_DECOR).flat(), EYES];
+    const load = () => art.forEach(({ src }) => {
       const img = new Image();
       img.src = src;
     });
@@ -128,7 +129,17 @@ function MorphView({ view, blinking }) {
     }
   }
 
+  // Scenery (like the sign's grass) grows out of the floor and stays put while the form bounces.
+  const decorForm = Object.keys(GROUND_DECOR).find((f) => [FORM_FRAMES[f].rebound, FORM_FRAMES[f].final].includes(frame));
+  let decorStage = null;
+  if (decorForm) {
+    if (frame === FORM_FRAMES[decorForm].rebound) decorStage = 'sprout';
+    else if (!view.active) decorStage = 'full';
+    else decorStage = view.settled === decorForm ? 'leave' : 'grow';
+  }
+
   return (
+    <>
     <div
       className="ozlo__morph"
       style={{ transform: `translateY(${y}px) scale(${sx}, ${sy})`, transformOrigin: `${BODY_CENTRE.x}px ${GROUND}px` }}
@@ -163,6 +174,21 @@ function MorphView({ view, blinking }) {
         />
       )}
     </div>
+    {decorForm && (
+      <div className="ozlo__decor" data-stage={decorStage}>
+        {GROUND_DECOR[decorForm].map((g, i) => (
+          <img
+            key={g.src}
+            className={`ozlo__layer ozlo__decor-${i + 1}`}
+            src={g.src}
+            alt=""
+            draggable="false"
+            style={{ left: g.x, top: g.y, width: g.w, height: g.h }}
+          />
+        ))}
+      </div>
+    )}
+    </>
   );
 }
 

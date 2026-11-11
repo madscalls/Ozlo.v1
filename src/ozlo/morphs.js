@@ -24,8 +24,17 @@ export const FRAMES = {
     src: `${base}hat-final.webp`, x: 55.0, y: 132.2, w: 450, h: 366,
     orbs: [
       { src: `${base}hat-final-orb1.webp`, x: 353.8, y: 163.1, w: 74, h: 70 },
-      { src: `${base}hat-final-orb2.webp`, x: 84.1, y: 459.6, w: 39, h: 38 },
+      { src: `${base}hat-final-orb2.webp`, x: 34, y: 236, w: 39, h: 38 },
       { src: `${base}hat-final-orb3.webp`, x: 418.9, y: 236.9, w: 33, h: 32 },
+    ],
+  },
+  'sign-rebound': { src: `${base}sign-rebound.webp`, x: 64.5, y: 58, w: 431, h: 440 },
+  'sign-final': {
+    src: `${base}sign-final.webp`, x: 60.0, y: 71, w: 440, h: 427,
+    orbs: [
+      { src: `${base}car-final-orb1.webp`, x: 470.0, y: 25, w: 74, h: 72 },
+      { src: `${base}car-final-orb2.webp`, x: 22.0, y: 263.1, w: 49, h: 50 },
+      { src: `${base}car-final-orb3.webp`, x: 506.0, y: 105.2, w: 26, h: 26 },
     ],
   },
 };
@@ -42,6 +51,8 @@ export const EYES_ON = {
   'car-final': { cx: 249.9, cy: 256.5, sx: 0.74, sy: 0.703 },
   'brim': { cx: 309.5, cy: 232.2, sx: 0.9, sy: 0.9 },
   'hat-final': { cx: 307.0, cy: 278.6, sx: 0.8, sy: 0.8 },
+  'sign-final': { cx: 280.0, cy: 224.7, sx: 0.85, sy: 0.807 },
+  'sign-rebound': { cx: 280.0, cy: 190.0, sx: 0.85, sy: 0.765 },
 };
 
 // Each form: the frame it springs up as after the splat, and the shape it lands as.
@@ -50,4 +61,15 @@ export const FORM_FRAMES = {
   core: { rebound: 'ozlo-rebound', final: 'core' },
   car: { rebound: 'car-rebound', final: 'car-final' },
   hat: { rebound: 'brim', final: 'hat-final' }, // placeholder rebound until hat-rebound is made
+  sign: { rebound: 'sign-rebound', final: 'sign-final' },
+};
+
+// Scenery that grows out of the floor with a form (stays put while the form bounces).
+// Three stages: sprouting (during the rebound), growing (on landing), full (at rest).
+export const GROUND_DECOR = {
+  sign: [
+    { src: `${base}grass-1.webp`, x: 10.0, y: 441, w: 540, h: 71 },
+    { src: `${base}grass-2.webp`, x: 10.0, y: 402, w: 540, h: 110 },
+    { src: `${base}grass-3.webp`, x: 10.0, y: 408, w: 540, h: 104 },
+  ],
 };
