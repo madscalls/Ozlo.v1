@@ -3,7 +3,7 @@ import Ozlo from './ozlo/Ozlo.jsx';
 import { FORMS, matchForm } from './ozlo/forms.js';
 import './App.css';
 
-const MOODS = ['idle', 'happy', 'thinking'];
+const MOODS = ['idle', 'excited', 'curious', 'thinking', 'focused'];
 
 export default function App() {
   const [mood, setMood] = useState('idle');

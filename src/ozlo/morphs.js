@@ -37,10 +37,37 @@ export const FRAMES = {
       { src: `${base}car-final-orb3.webp`, x: 506.0, y: 105.2, w: 26, h: 26 },
     ],
   },
+  'shirt-rise': { src: `${base}shirt-rise.webp`, x: 60.0, y: 231, w: 440, h: 267 },
+  'shirt-rebound': { src: `${base}shirt-rebound.webp`, x: 72.5, y: 58, w: 415, h: 440 },
+  'sticker-rise': { src: `${base}sticker-rise.webp`, x: 107.5, y: 138, w: 345, h: 360 },
+  'sticker-rebound': { src: `${base}sticker-rebound.webp`, x: 59.5, y: 58, w: 441, h: 440 },
+  'sticker-final': {
+    src: `${base}sticker-final.webp`, x: 70.0, y: 110, w: 420, h: 388,
+    orbs: [
+      { src: `${base}car-final-orb1.webp`, x: 456.0, y: 70, w: 74, h: 72 },
+      { src: `${base}car-final-orb3.webp`, x: 48.0, y: 179.8, w: 26, h: 26 },
+    ],
+  },
+  'shirt-final': {
+    src: `${base}shirt-final.webp`, x: 80.0, y: 171.4, w: 400, h: 327,
+    orbs: [
+      { src: `${base}shirt-final-orb1.webp`, x: 114.8, y: 411.3, w: 43, h: 39 },
+      { src: `${base}shirt-final-orb2.webp`, x: 394.4, y: 400.1, w: 31, h: 31 },
+      { src: `${base}shirt-final-orb3.webp`, x: 58.0, y: 236.0, w: 26, h: 24 },
+      { src: `${base}shirt-final-orb4.webp`, x: 152.3, y: 366.4, w: 24, h: 23 },
+      { src: `${base}shirt-final-orb5.webp`, x: 384.4, y: 180.7, w: 20, h: 19 },
+    ],
+  },
 };
 
 // Forward-facing eyes (240 × 105 at scale 1), shown on every frame except Ozlo's own painted face.
 export const EYES = { src: `${base}eyes-front.webp`, w: 240, h: 105 };
+
+// Mood versions of the forward eyes, same width and centre (curious is taller for the eyebrow).
+export const EYES_MOOD = {
+  focused: { src: `${base}eyes-focused.webp`, w: 240, h: 104 },
+  curious: { src: `${base}eyes-curious.webp`, w: 240, h: 126, dy: -10 },
+};
 
 // Where the eyes sit on each frame: centre (cx, cy) and scale (sx, sy).
 export const EYES_ON = {
@@ -53,15 +80,24 @@ export const EYES_ON = {
   'hat-final': { cx: 307.0, cy: 278.6, sx: 0.8, sy: 0.8 },
   'sign-final': { cx: 280.0, cy: 224.7, sx: 0.85, sy: 0.807 },
   'sign-rebound': { cx: 280.0, cy: 190.0, sx: 0.85, sy: 0.765 },
+  'shirt-rise': { cx: 280.0, cy: 369.8, sx: 0.75, sy: 0.45 },
+  'shirt-rebound': { cx: 280.0, cy: 176.8, sx: 0.75, sy: 0.712 },
+  'sticker-rise': { cx: 314.5, cy: 289.2, sx: 0.85, sy: 0.68 },
+  'sticker-rebound': { cx: 324.1, cy: 216.4, sx: 0.85, sy: 0.807 },
+  'sticker-final': { cx: 322.0, cy: 265.2, sx: 0.85, sy: 0.85 },
+  'shirt-final': { cx: 280.0, cy: 249.9, sx: 0.72, sy: 0.72 },
 };
 
-// Each form: the frame it springs up as after the splat, and the shape it lands as.
+// Each form: an optional frame where it first rises out of the puddle, the frame it springs
+// up as, and the shape it lands as.
 // 'core' lands as Ozlo's own painted body. Add a form here once its two frames exist.
 export const FORM_FRAMES = {
   core: { rebound: 'ozlo-rebound', final: 'core' },
   car: { rebound: 'car-rebound', final: 'car-final' },
   hat: { rebound: 'brim', final: 'hat-final' }, // placeholder rebound until hat-rebound is made
   sign: { rebound: 'sign-rebound', final: 'sign-final' },
+  sticker: { rise: 'sticker-rise', rebound: 'sticker-rebound', final: 'sticker-final' },
+  shirt: { rise: 'shirt-rise', rebound: 'shirt-rebound', final: 'shirt-final' },
 };
 
 // Scenery that grows out of the floor with a form (stays put while the form bounces).

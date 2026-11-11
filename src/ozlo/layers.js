@@ -21,6 +21,13 @@ export const LAYERS = {
   blinkPatch: { src: `${base}ozlo2-blink-patch.webp`, x: 67.3, y: 22.1, w: 431, h: 271 },
   lookUp: { src: `${base}ozlo2-look-up.webp`, x: 260.5, y: 135.2, w: 209, h: 166 },
   laugh: { src: `${base}ozlo2-laugh.webp`, x: 72, y: 105.5, w: 452, h: 285 },
+
+  // Expressions (full face patches over the painted face).
+  curious1: { src: `${base}ozlo2-curious-1.webp`, x: 177.2, y: 105.8, w: 311, h: 279 },
+  curious2: { src: `${base}ozlo2-curious-2.webp`, x: 177.2, y: 107.4, w: 312, h: 278 },
+  curious3: { src: `${base}ozlo2-curious-3.webp`, x: 194.8, y: 107.0, w: 286, h: 278 },
+  thinking: { src: `${base}ozlo2-thinking.webp`, x: 188.8, y: 107.0, w: 322, h: 322 },
+  focused: { src: `${base}ozlo2-focused.webp`, x: 155.6, y: 109.0, w: 357, h: 276 },
 };
 
 // Closed-eyelid lines drawn over the blink patch (centre x/y, half-width r).

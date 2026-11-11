@@ -8,17 +8,20 @@ import { FORM_FRAMES } from './morphs.js';
 // `fade` blends in from the previous frame through the goo filter.
 function buildSteps(fromForm, toForm) {
   const from = fromForm === 'core' ? 'core' : FORM_FRAMES[fromForm].final;
-  const { rebound, final } = FORM_FRAMES[toForm];
-  return [
+  const { rise, rebound, final } = FORM_FRAMES[toForm];
+  const steps = [
     { frame: from, dur: 120, y: [0, 0], sx: [1, 1.12], sy: [1, 0.86], ease: 'out' }, // crouch
     { frame: from, dur: 170, y: [0, -70], sx: [1.12, 0.9], sy: [0.86, 1.14], ease: 'out' }, // hop
     { frame: from, dur: 150, y: [-70, 0], sx: [0.9, 0.86], sy: [1.14, 1.18], ease: 'in' }, // drop
     { frame: 'splat-impact', dur: 110, y: [0, 0], sx: [1.15, 1], sy: [0.7, 1], ease: 'out', fade: 40 }, // splat
     { frame: 'splat-recoil', dur: 90, y: [0, 0], sx: [0.92, 1.04], sy: [1, 0.92], ease: 'out', fade: 50 }, // gather
+    // rise: pulls up out of the puddle (only for forms that have this frame)
+    { frame: rise, dur: 110, y: [0, 0], sx: [1.06, 0.96], sy: [0.88, 1.06], ease: 'out', fade: 50 },
     { frame: rebound, dur: 200, y: [0, -80], sx: [0.9, 0.97], sy: [1.12, 1.04], ease: 'out', fade: 60 }, // spring up
     { frame: final, dur: 140, y: [-80, 0], sx: [0.96, 0.96], sy: [1.06, 1.06], ease: 'in', fade: 70 }, // fall into shape
     { frame: final, dur: 650, y: [0, 0], wobble: true }, // land
   ];
+  return steps.filter((st) => st.frame);
 }
 
 const easeOut = (t) => 1 - (1 - t) * (1 - t);

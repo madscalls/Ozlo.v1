@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { LAYERS, LIDS, SHADOW, STAGE, BODY_CENTRE } from './layers.js';
-import { FRAMES, EYES, EYES_ON, GROUND, FORM_FRAMES, GROUND_DECOR } from './morphs.js';
+import { FRAMES, EYES, EYES_MOOD, EYES_ON, GROUND, FORM_FRAMES, GROUND_DECOR } from './morphs.js';
 import useMorph from './useMorph.js';
 import './Ozlo.css';
 
@@ -9,7 +9,8 @@ import './Ozlo.css';
  *
  * Props
  *  size         width in px (the stage keeps its 560 × 580 proportions)
- *  mood         'idle' | 'happy' | 'thinking'
+ *  mood         'idle' | 'excited' | 'curious' | 'thinking' | 'focused'
+ *               (on product forms the eyes change: excited = happy squint, curious, focused)
  *  talking      true while a reply is streaming: the mouth flaps
  *  look         'center' | 'up'
  *  blinkSignal  change this number to force a blink (handy for testing)
@@ -19,20 +20,34 @@ export default function Ozlo({ size = 150, mood = 'idle', talking = false, look 
   const reduced = usePrefersReducedMotion();
   const hidden = usePageHidden();
   const still = reduced || hidden;
-  const happy = mood === 'happy';
+  const happy = mood === 'excited' || mood === 'happy';
+  const curiousStep = useCuriousStep(mood === 'curious' && !still);
 
   const morph = useMorph(form, reduced);
   const asObject = morph.active || morph.settled !== 'core';
 
-  const blinking = useBlink({ enabled: !still && !happy && !asObject, signal: asObject ? 0 : blinkSignal });
-  const objectBlink = useBlink({ enabled: !still && !morph.active && morph.settled !== 'core', signal: asObject ? blinkSignal : 0 });
+  // Blinks only on faces with open, round eyes (not while laughing or squinting in focus).
+  const canBlink = !happy && mood !== 'focused';
+  const blinking = useBlink({ enabled: !still && canBlink && !asObject, signal: asObject ? 0 : blinkSignal });
+  const objectBlink = useBlink({ enabled: !still && canBlink && !morph.active && morph.settled !== 'core', signal: asObject ? blinkSignal : 0 });
   const mouthOpen = useMouth({ talking: talking && !still && !asObject, idleSmiles: !still && mood === 'idle' && !asObject });
+
+  // Which painted expression covers the face (null = the base face with its own patches).
+  const expression = talking
+    ? null
+    : happy
+      ? 'laugh'
+      : mood === 'curious'
+        ? `curious${4 - curiousStep}` // plays 3 → 2 → 1: one brow up, then the other joins and lifts
+        : mood === 'thinking' || mood === 'focused'
+          ? mood
+          : null;
 
   const scale = size / STAGE.width;
 
   // Load the morph art in the background once the page is idle, so the first morph doesn't flicker.
   useEffect(() => {
-    const art = [...Object.values(FRAMES), ...Object.values(FRAMES).flatMap((f) => f.orbs || []), ...Object.values(GROUND_DECOR).flat(), EYES];
+    const art = [...Object.values(EYES_MOOD), ...Object.values(FRAMES), ...Object.values(FRAMES).flatMap((f) => f.orbs || []), ...Object.values(GROUND_DECOR).flat(), EYES];
     const load = () => art.forEach(({ src }) => {
       const img = new Image();
       img.src = src;
@@ -60,11 +75,11 @@ export default function Ozlo({ size = 150, mood = 'idle', talking = false, look 
           <div className="ozlo__glow" style={{ left: BODY_CENTRE.x - 280, top: BODY_CENTRE.y - 280 }} />
 
           {asObject ? (
-            <MorphView view={morph} blinking={objectBlink} />
+            <MorphView view={morph} blinking={objectBlink} mood={happy ? 'excited' : mood} />
           ) : (
             <CoreFace
               look={look}
-              happy={happy}
+              expression={expression}
               mouthOpen={mouthOpen}
               blinking={blinking}
             />
@@ -76,13 +91,17 @@ export default function Ozlo({ size = 150, mood = 'idle', talking = false, look 
 }
 
 // Ozlo's own painted face, with the face patches swapped in as needed.
-function CoreFace({ look, happy, mouthOpen, blinking }) {
+const EXPRESSIONS = ['laugh', 'curious1', 'curious2', 'curious3', 'thinking', 'focused'];
+
+function CoreFace({ look, expression, mouthOpen, blinking }) {
   return (
     <>
           <Layer name="body" />
-          <Layer name="lookUp" show={look === 'up' && !happy} />
-          <Layer name="laugh" show={happy} />
-          <Layer name="mouthClosed" show={!happy && !mouthOpen} />
+          <Layer name="lookUp" show={look === 'up' && !expression} />
+          <Layer name="mouthClosed" show={!expression && !mouthOpen} />
+          {EXPRESSIONS.map((e) => (
+            <Layer key={e} name={e} show={expression === e} />
+          ))}
           <Layer name="blinkPatch" show={blinking} />
           <svg
             className="ozlo__lids"
@@ -109,7 +128,7 @@ function CoreFace({ look, happy, mouthOpen, blinking }) {
 
 // Morphing (or resting as an object): painted frames that move, squash and stretch,
 // blended into each other through a "goo" filter, with the forward eyes riding on top.
-function MorphView({ view, blinking }) {
+function MorphView({ view, blinking, mood }) {
   const id = useId().replace(/:/g, '');
   const { frame, prev, mix, y, sx, sy } = view;
   const blur = prev ? 2 + 8 * Math.sin(Math.PI * mix) : 0;
@@ -161,14 +180,15 @@ function MorphView({ view, blinking }) {
         <img
           className="ozlo__layer ozlo__eyes"
           data-blink={blinking || undefined}
-          src={EYES.src}
+          data-mood={mood}
+          src={(EYES_MOOD[mood] || EYES).src}
           alt=""
           draggable="false"
           style={{
             left: eyes.cx - (EYES.w * eyes.sx) / 2,
-            top: eyes.cy - (EYES.h * eyes.sy) / 2,
+            top: eyes.cy - (EYES.h * eyes.sy) / 2 + ((EYES_MOOD[mood] || EYES).dy || 0) * eyes.sy,
             width: EYES.w * eyes.sx,
-            height: EYES.h * eyes.sy,
+            height: ((EYES_MOOD[mood] || EYES).h / EYES.w) * EYES.w * eyes.sy,
             opacity: eyeOpacity,
           }}
         />
@@ -255,6 +275,25 @@ function Layer({ name, show = true, className = '' }) {
       style={{ left: x, top: y, width: w, height: h }}
     />
   );
+}
+
+// Curious plays as a progression: a skeptical "hmm" with one brow up, an "oh?",
+// then both brows lift and he holds there.
+function useCuriousStep(active) {
+  const [step, setStep] = useState(1);
+  useEffect(() => {
+    if (!active) {
+      setStep(1);
+      return undefined;
+    }
+    const t1 = setTimeout(() => setStep(2), 260);
+    const t2 = setTimeout(() => setStep(3), 560);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [active]);
+  return step;
 }
 
 // Blinks every 2.8–5.5 s at random, sometimes twice in a row.
