@@ -163,14 +163,50 @@
   transition: transform 60ms ease-out;
 }
 
-.ozlo__face[data-blink] .ozlo__eyes {
+.ozlo__eyes[data-blink] {
   transform: scaleY(0.08);
+}
+
+/* Floating orbs on the product forms: pop free of the body, then hover on their own. */
+.ozlo__orb {
+  animation:
+    ozlo-orb-pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both,
+    ozlo-orb-float 2.6s ease-in-out 0.45s infinite alternate;
+}
+
+.ozlo__orb--2 {
+  animation-duration: 0.5s, 3.1s;
+  animation-delay: 0.05s, 0.55s;
+}
+
+.ozlo__orb--3 {
+  animation-duration: 0.55s, 2.2s;
+  animation-delay: 0.1s, 0.65s;
+}
+
+@keyframes ozlo-orb-pop {
+  from {
+    transform: translate(var(--from-x), var(--from-y)) scale(0.2);
+  }
+  to {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes ozlo-orb-float {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(3px, -11px);
+  }
 }
 
 /* Reduced motion or a hidden tab: hold still. */
 .ozlo[data-still] .ozlo__bob,
 .ozlo[data-still] .ozlo__shadow,
 .ozlo[data-still] .ozlo__drop,
-.ozlo[data-still] .ozlo__glow {
+.ozlo[data-still] .ozlo__glow,
+.ozlo[data-still] .ozlo__orb {
   animation: none;
 }

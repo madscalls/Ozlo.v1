@@ -1,10 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { LAYERS, LIDS, SHADOW, STAGE, BODY_CENTRE } from './layers.js';
-import { MORPH_FRAMES, EYES, BEAK, EYE_CENTRE, FACE_ON } from './morphs.js';
-import useMorph, { wobble } from './useMorph.js';
+import { FRAMES, EYES, EYES_ON, GROUND } from './morphs.js';
+import useMorph from './useMorph.js';
 import './Ozlo.css';
-
-const GROUND = 498; // where Ozlo's base sits on the stage; squash and wobble pivot here
 
 /**
  * Ozlo, the jelly helper.
@@ -15,7 +13,7 @@ const GROUND = 498; // where Ozlo's base sits on the stage; squash and wobble pi
  *  talking      true while a reply is streaming: the mouth flaps
  *  look         'center' | 'up'
  *  blinkSignal  change this number to force a blink (handy for testing)
- *  form         'core' | 'hat' – changing it plays the morph
+ *  form         'core' | 'car' | 'hat' – changing it plays the splat-and-bounce morph
  */
 export default function Ozlo({ size = 150, mood = 'idle', talking = false, look = 'center', blinkSignal = 0, form = 'core' }) {
   const reduced = usePrefersReducedMotion();
@@ -24,17 +22,17 @@ export default function Ozlo({ size = 150, mood = 'idle', talking = false, look 
   const happy = mood === 'happy';
 
   const morph = useMorph(form, reduced);
-  const asObject = morph.morphing || morph.settled !== 'core';
+  const asObject = morph.active || morph.settled !== 'core';
 
   const blinking = useBlink({ enabled: !still && !happy && !asObject, signal: asObject ? 0 : blinkSignal });
-  const objectBlink = useBlink({ enabled: !still && !morph.morphing && morph.settled !== 'core', signal: asObject ? blinkSignal : 0 });
+  const objectBlink = useBlink({ enabled: !still && !morph.active && morph.settled !== 'core', signal: asObject ? blinkSignal : 0 });
   const mouthOpen = useMouth({ talking: talking && !still && !asObject, idleSmiles: !still && mood === 'idle' && !asObject });
 
   const scale = size / STAGE.width;
 
   // Load the morph art in the background once the page is idle, so the first morph doesn't flicker.
   useEffect(() => {
-    const load = () => [...Object.values(MORPH_FRAMES), EYES, BEAK].forEach(({ src }) => {
+    const load = () => [...Object.values(FRAMES), EYES].forEach(({ src }) => {
       const img = new Image();
       img.src = src;
     });
@@ -108,29 +106,32 @@ function CoreFace({ look, happy, mouthOpen, blinking }) {
   );
 }
 
-// Morphing (or resting as an object): painted frames blended through a "goo" filter
-// so their outlines flow into each other, with one face layer gliding on top.
+// Morphing (or resting as an object): painted frames that move, squash and stretch,
+// blended into each other through a "goo" filter, with the forward eyes riding on top.
 function MorphView({ view, blinking }) {
   const id = useId().replace(/:/g, '');
-  const { from, to, u, antic, sinceArrive } = view;
-  const blending = from !== to;
-  const blur = blending ? 2 + 9 * Math.sin(Math.PI * u) : 0;
+  const { frame, prev, mix, y, sx, sy } = view;
+  const blur = prev ? 2 + 8 * Math.sin(Math.PI * mix) : 0;
 
-  let [sx, sy] = wobble(sinceArrive);
-  if (antic) {
-    sx *= 1 + 0.1 * antic;
-    sy *= 1 - 0.1 * antic;
+  const eyesTo = EYES_ON[frame];
+  const eyesFrom = prev ? EYES_ON[prev] : null;
+  let eyes = eyesTo;
+  let eyeOpacity = eyesTo ? 1 : 0;
+  if (prev) {
+    if (eyesFrom && eyesTo) {
+      eyes = Object.fromEntries(Object.keys(eyesTo).map((k) => [k, eyesFrom[k] + (eyesTo[k] - eyesFrom[k]) * mix]));
+    } else if (eyesFrom) {
+      eyes = eyesFrom; // fading back into Ozlo's painted face
+      eyeOpacity = 1 - mix;
+    } else {
+      eyeOpacity = mix; // coming out of Ozlo's painted face
+    }
   }
-
-  const a = FACE_ON[from];
-  const b = FACE_ON[to];
-  const mix = (k) => a[k] + (b[k] - a[k]) * u;
-  const face = { cx: mix('cx'), cy: mix('cy'), s: mix('s'), beak: mix('beak') };
 
   return (
     <div
       className="ozlo__morph"
-      style={{ transform: `scale(${sx}, ${sy})`, transformOrigin: `${BODY_CENTRE.x}px ${GROUND}px` }}
+      style={{ transform: `translateY(${y}px) scale(${sx}, ${sy})`, transformOrigin: `${BODY_CENTRE.x}px ${GROUND}px` }}
     >
       <svg width="0" height="0" style={{ position: 'absolute' }} aria-hidden="true">
         <filter id={`goo${id}`} x="-20%" y="-20%" width="140%" height="140%">
@@ -141,28 +142,33 @@ function MorphView({ view, blinking }) {
       </svg>
 
       <div className="ozlo__frames" style={{ filter: blur ? `url(#goo${id})` : 'none' }}>
-        <Frame name={from} opacity={blending ? 1 - u : 1} />
-        {blending && <Frame name={to} opacity={u} />}
+        {prev && <Frame key={prev} name={prev} opacity={1 - mix} />}
+        <Frame key={frame} name={frame} opacity={prev ? mix : 1} />
       </div>
 
-      <div
-        className="ozlo__face"
-        data-blink={blinking || undefined}
-        style={{
-          transform: `translate(${face.cx - EYE_CENTRE.x}px, ${face.cy - EYE_CENTRE.y}px) scale(${face.s})`,
-          transformOrigin: `${EYE_CENTRE.x}px ${EYE_CENTRE.y}px`,
-        }}
-      >
-        <img className="ozlo__layer" src={BEAK.src} alt="" draggable="false" style={{ left: BEAK.x, top: BEAK.y, width: BEAK.w, height: BEAK.h, opacity: face.beak }} />
-        <img className="ozlo__layer ozlo__eyes" src={EYES.src} alt="" draggable="false" style={{ left: EYES.x, top: EYES.y, width: EYES.w, height: EYES.h }} />
-      </div>
+      {eyes && (
+        <img
+          className="ozlo__layer ozlo__eyes"
+          data-blink={blinking || undefined}
+          src={EYES.src}
+          alt=""
+          draggable="false"
+          style={{
+            left: eyes.cx - (EYES.w * eyes.sx) / 2,
+            top: eyes.cy - (EYES.h * eyes.sy) / 2,
+            width: EYES.w * eyes.sx,
+            height: EYES.h * eyes.sy,
+            opacity: eyeOpacity,
+          }}
+        />
+      )}
     </div>
   );
 }
 
 function Frame({ name, opacity }) {
   if (name === 'core') {
-    // Ozlo's painted body and droplets, held still while he melts.
+    // Ozlo's own painted body, face and droplets.
     return (
       <div className="ozlo__frame" style={{ opacity }}>
         {['body', 'drop1', 'drop2', 'drop3'].map((n) => (
@@ -171,8 +177,8 @@ function Frame({ name, opacity }) {
       </div>
     );
   }
-  const f = MORPH_FRAMES[name];
-  return (
+  const f = FRAMES[name];
+  const img = (
     <img
       className="ozlo__layer"
       src={f.src}
@@ -180,6 +186,34 @@ function Frame({ name, opacity }) {
       draggable="false"
       style={{ left: f.x, top: f.y, width: f.w, height: f.h, opacity }}
     />
+  );
+  if (!f.orbs) return img;
+  // Floating orbs: they pop out of the body as it lands (the drips snapping free),
+  // then drift on their own, each on its own beat.
+  const cx = f.x + f.w / 2;
+  const cy = f.y + f.h / 2;
+  return (
+    <>
+      {img}
+      {f.orbs.map((o, i) => (
+        <img
+          key={o.src}
+          className={`ozlo__layer ozlo__orb ozlo__orb--${i + 1}`}
+          src={o.src}
+          alt=""
+          draggable="false"
+          style={{
+            left: o.x,
+            top: o.y,
+            width: o.w,
+            height: o.h,
+            opacity,
+            '--from-x': `${(cx - (o.x + o.w / 2)) * 0.7}px`,
+            '--from-y': `${(cy - (o.y + o.h / 2)) * 0.7}px`,
+          }}
+        />
+      ))}
+    </>
   );
 }
 

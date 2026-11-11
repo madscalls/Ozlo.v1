@@ -22,10 +22,15 @@ bottom-right corner is real size.
 - `src/ozlo/forms.js`: keywords that cue each form (hat, shirt, van…).
 - `src/App.jsx`: the test page.
 
-## Morphs
+## Morphs (drop → splat → rebound)
 
-- Press **Hat** under Form (or type "I need hats" and Send) to watch the morph.
-- Frames live in `public/ozlo/morphs/`; their positions and where the eyes sit on each
-  are in `src/ozlo/morphs.js`. The order of frames per form is `MORPH_PATHS`.
-- Timing is at the top of `src/ozlo/useMorph.js` (blend, hold, anticipation, settle).
-- To swap the eyes, replace `public/ozlo/morphs/eyes.webp` (same canvas as the core art).
+- Under **Form**, press **Car / wrap** or **Hat**, or type "how much for a car wrap?" and Send.
+- Every change is one bouncy move: crouch, hop, drop, splat on the floor, spring back up
+  as the new shape, land with a wobble. Form to form goes straight through the splat.
+- Shared frames: `splat-impact`, `splat-recoil`, `ozlo-rebound`. Each form needs two more:
+  `[form]-rebound` and `[form]-final`, listed in `FORM_FRAMES` in `src/ozlo/morphs.js`.
+- Resting forms have no drips; their floating orbs are separate files listed under `orbs`
+  in `src/ozlo/morphs.js`, so they pop free on landing and drift on their own.
+- Frame positions and where the forward eyes sit on each are in `src/ozlo/morphs.js`.
+- Timing and squash/stretch for each beat are in `buildSteps()` in `src/ozlo/useMorph.js`.
+- `npm run preview` serves the built site at `/Ozlo.v1/`, same as GitHub Pages.

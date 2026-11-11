@@ -6,7 +6,7 @@ export const FORMS = {
   core: { label: 'Ozlo', ready: true },
   hat: { label: 'Hat', ready: true, keywords: ['hat', 'hats', 'cap', 'caps', 'beanie', 'snapback'] },
   shirt: { label: 'Shirt', ready: false, keywords: ['shirt', 'shirts', 't-shirt', 'tee', 'tees', 'apparel', 'hoodie', 'merch'] },
-  van: { label: 'Vehicle wrap', ready: false, keywords: ['wrap', 'wraps', 'truck', 'van', 'car', 'vehicle', 'fleet', 'lettering'] },
+  car: { label: 'Car / wrap', ready: true, keywords: ['wrap', 'wraps', 'truck', 'van', 'car', 'vehicle', 'fleet', 'lettering'] },
   sign: { label: 'Yard sign', ready: false, keywords: ['sign', 'signs', 'signage', 'yard', 'banner', 'banners', 'storefront'] },
   sticker: { label: 'Sticker', ready: false, keywords: ['sticker', 'stickers', 'decal', 'decals', 'magnet', 'magnets'] },
   card: { label: 'Business card', ready: false, keywords: ['card', 'cards', 'business card', 'print', 'flyer', 'flyers'] },
